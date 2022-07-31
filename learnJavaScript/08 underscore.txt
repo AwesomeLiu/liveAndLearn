@@ -1,0 +1,94 @@
+underscore 第三方库 提供了一套完善的函数式编程的接口
+  ** underscore把自身绑定到唯一的全局变量'_'(下划线)上
+
+Collections
+  ** underscore为集合类对象提供了一致的接口，集合类指Array和Object，暂不支持Map和Set
+
+  ** map / filter
+  -> 和Array的map()与filter()类似，但是underscore的map()和filter()可以作用于Object
+  -> 当作用于Object时，传入的函数为 function (value, key)
+  -> 对Object作map()操作返回的结果是Array，若要返回Object，使用_.mapObject
+
+  ** every / some
+  -> 当集合的所有元素都满足条件时，_.every()函数返回true
+  -> 当集合的至少一个元素满足条件时，_.some()函数返回true
+  -> 当作用于Object时，传入的函数为 function (value, key)
+
+  ** max / min
+  -> 直接返回集合中最大和最小的数
+  -> 如果集合是Object，max()和min()只作用于value
+
+  ** groupBy
+  -> 把集合的元素按照key归类，key由传入的函数返回
+  -> 详见js文件第515-533行
+
+  ** shuffle / sample
+  -> shuffle()       用洗牌算法随机打乱一个集合
+  -> sample(col, n)  在col中随机选择n个元素，n省略时为1
+
+  ** 更多完整的函数请参考underscore的文档：http://underscorejs.org/#collections
+
+Arrays
+  ** first   取数组中第一个元素
+  ** last    取数组中最后一个元素
+
+  ** flatten 接收一个Array，把它变成一个一维数组
+
+  ** zip     把两个或多个数组的所有元素按索引对齐，然后按索引合并成新数组
+  ** unzip   与zip作用相反
+  ** object  与zip功能类似，将其合并成Object类型
+
+  ** range   快速生成一个序列
+  -> _.range({1}, {2}, {3})
+  1. 起点，包含
+  ---> 只有一个参数时为终点（不含），起点默认为0，
+  2. 终点，不含
+  3. 步长，省略则为1
+  -> 详见js文件第535-541行
+
+  ** 更多完整的函数请参考underscore的文档：http://underscorejs.org/#arrays
+
+Functions
+  ** underscore提供了大量JavaScript本身没有的高阶函数
+
+  ** bind    绑定
+  -> var log = _.bind(console.log, console); 将console对象直接绑定在log()的this指针上
+
+  ** partial 为一个函数创建偏函数(固定某个参数的幂函数)
+  -> var pow2N = _.partial(Math.pow, 2); ==> 2^y
+  -> var powN3 = _.partial(Math.pow, _, 3); ==> x^3
+
+  ** memoize 可以自动缓存函数计算的结果，详见js文件第543-585行
+
+  ** once    保证某个函数执行且仅执行一次
+
+  ** delay   让一个函数延迟执行，效果和setTimeout()一样
+
+  ** 更多完整的函数请参考underscore的文档：http://underscorejs.org/#functions
+
+Objects
+  ** keys      返回一个object自身所有的key，不包括从原型链继承的
+  ** allKeys   返回一个object所有的key，包括从原型链继承的
+
+  ** values    返回object自身但不包含原型链继承的所有值
+  -> 没有allValues()方法
+
+  ** mapObject 针对object的map版本
+
+  ** invert    把object的每个key-value来个交换，key变成value，value变成key
+
+  ** extend    把多个object的key-value合并到第一个object并返回
+  -> 如果有相同的key，后面的object的value将覆盖前面的object的value
+  ** extendOwn 和extend类似，但获取属性时忽略从原型链继承下来的属性
+
+  ** clone     复制一个object对象
+  -> clone()是“浅复制”，即两个对象相同的key所引用的value其实是同一对象
+
+  ** isEqual   对两个object进行深度比较，如果内容完全相同，则返回true
+  -> 可用于Array
+
+  ** 更多完整的函数请参考underscore的文档：http://underscorejs.org/#objects
+
+Chaining
+  ** chain 把对象包装成能进行链式调用
+  -> 每一步返回的都是包装对象，最后一步的结果需要调用value()获得最终结果

@@ -1,0 +1,243 @@
+主流的浏览器分为以下几种
+  ** IE 6~11 从IE10开始支持ES6标准
+  ** Chrome
+  ** Safari
+  ** Firefox
+  ** Opera等市场份额较小的浏览器
+  ** XX安全浏览器 XX旋风浏览器等国产浏览器 核心调用的是IE，也有同时支持IE和Webkit的“双核”浏览器
+
+浏览器对象
+  ** window对象 即充当全局作用域，又表示浏览器窗口
+  -> innerWidth和innerHeight属性 获取浏览器窗口的内部宽度和高度（去除菜单栏、工具栏等占位元素，用于显示网页的净宽高）
+  -> 兼容性：IE8及以下不支持
+  -> outerWidth和outerHeight属性 获取浏览器窗口的整个宽度和高度
+
+  ** navigator对象 表示浏览器的信息
+  常用的属性包括
+   * appName    浏览器名称
+   * appVersion 浏览器版本
+   * language   浏览器设置的语言
+   * platform   操作系统类型
+   * userAgent  浏览器设定的 User-Agent 字符串
+  -> navigator的信息可以很容易被用户修改，所以读取的值不一定正确
+
+  ** screen对象 表示屏幕的信息
+  常用的属性包括
+   * widtH      屏幕的宽度，单位px(像素)
+   * height     屏幕的高度，单位px
+   * colorDepth 返回颜色位数，如8、16、24
+
+  ** location对象 表示当前页面的URL信息
+  例如 http://www.example.com:8080/path/index.html?a=1&b=2#Top
+  常用的属性包括
+   * href     获取URL
+   * protocol 返回URL的协议 'http'
+   * host     返回URL的主机名 'www.example.com'
+   * port     返回URL的端口号 '8080'
+   * pathname 返回URL的路径 '/path/index.html'
+   * search   返回从问号(?)开始的URL '?a=1&b=2'
+   * hash     返回从井号(#)开始的URL 'Top'
+  -> location.assign() 加载一个新页面
+  -> location.reload() 重新加载当前页面
+
+  ** document对象 表示当前页面，是整个DOM树的根结点
+  常用的属性包括
+   * title  浏览器窗口标题
+   * cookie 获取当前页面的Cookie
+     由于JS能读取到页面的Cookie，而用户的登录信息通常也存在Cookie中，这就造成了巨大的安全隐患。为了确保安全，服务器端在设置Cookie时，应该始终坚持使用httpOnly
+  获取节点
+  -> document.getElementById()
+  -> document.getElementsByTagName()
+  -> document.getElementsByClassName()
+  创建节点
+  -> document.createElement()
+
+  ** history对象 保存浏览器的历史记录
+  -> history.back()    相当于点击了“后退”按钮
+  -> history.forward() 相当于点击了“前进”按钮
+  -> 任何情况，都不应该使用history对象
+
+操作DOM
+  ** HTML文档被浏览器解析后是一个DOM树，始终记住DOM是一个树形结构
+  ** 对DOM节点的操作包括 更新、遍历、添加、删除
+  ** 获取节点的方法
+  1. document.getElementById()、document.getElementsByTagName()和document.getElementsByClassName()
+  2. querySelector()和querySelectorAll() IE8以下不支持，IE8仅有限支持
+
+  ** 严格地讲，我们这里的DOM节点是指Element，但是DOM节点实际上是Node，在HTML中，Node包括Element、Comment、CDATA_SECTION等很多种，以及根节点Document类型，但是，绝大多数时候我们只关心Element，也就是实际控制页面结构的Node，其他类型的Node忽略即可。根节点Document已经自动绑定为全局变量document
+
+更新DOM
+  ** 可以直接修改节点的文本，方法有两种
+  1. 修改innerHTML属性
+  -> 不但可以修改一个DOM节点的文本内容，还可以直接通过HTML片段修改DOM节点内部的子树
+  -> 但使用innerHTML时要注意，是否需要写入HTML。如果写入的字符串是通过网络拿到了，要注意对字符编码以避免XSS攻击
+
+  2. 修改innerText或textContent属性
+  -> 可以自动对字符串进行HTML编码，保证无法设置任何HTML标签
+  -> 两者的区别在于，读取属性时，innerText不反悔隐藏元素的文本，而textContent返回所有文本。并且IE9以下不支持textContent
+
+  ** DOM节点的style属性对应所有的CSS，可以直接获取或设置
+  -> 由于CSS允许 'font-size' 这样的名称，但在JS中并非有效，所以需要将其改写为驼峰式命名 'fontSize'
+
+插入DOM
+  ** 有两个办法可以插入新的节点
+  1. appendChild  把一个子结点添加到父节点的最后一个子结点
+  2. insertBefore 把一个子结点添加到指定位置前
+  -> parentElement.insertBefore(newElement, referenceElement) newElement会插入到referenceElement之前
+
+  ** 循环一个父节点的所有子结点，可以通过迭代children属性实现
+
+删除DOM
+  ** parentElement.removeChild(self) 删除parentElement节点下的self节点
+  -> children属性是一个只读属性，并且在子结点变化时实时更新，详见js文件第294-308行
+
+操作表单
+  ** 表单本身也是DOM树
+
+  ** 表单的输入控件主要有以下几种
+   * <input type="text">     文本框，输入文本
+   * <input type="password"> 口令框，输入口令
+   * <input type="radio">    单选框，选择一项
+   * <input type="checkbox"> 复选框，选择多项
+   * <input type="hidden">   隐藏文本，用户不可见，表单提交时把隐藏文本发送到服务器
+   * <select>                下拉框，选择一项
+
+  ** 直接调用<input>节点的value，可以获得、设置对应的用户输入值，该方法适用于text/password/hidden/select
+
+  ** 对于radio和checkbox，需使用checked进行判断，设置checked为ture或false即可
+
+HTML5控件
+  新增的常用标准控件包括
+   * <input type="date">
+   * <input type="datetime">       YYYY-MM-DD格式的日期 或 空字符串
+   * <input type="datetime-local">
+   * <input type="color">
+
+  -> 不支持HTML5的浏览器会把它们当做<input type="text">来显示
+
+提交表单
+  ** JS可以以两种方式来处理表单的提交
+  1. 通过<form>元素的submit()方法，详见js文件第310-325行
+  -> 缺点是扰乱了浏览器对form的正常提交
+
+   * 浏览器默认点击<button type="submit">时提交表单，或者用户在最后一个输入框按回车键
+
+  2. 响应<form>本身的onsubmit事件，在提交form是作修改，详见js文件第327-342行
+
+  ** 在检查和修改<input>时，要充分利用<input type="hidden">来传递数据
+  -> 例如，很多登录表单希望用户输入用户名和口令，但是，安全考虑，提交表单时不传输明文口令，而是口令的MD5。但用户输入了口令提交时，口令框的显示会突然从几个*变成32个*（因为MD5有32个字符）。要想不改变用户的输入，可以利用<input type="hidden">实现，详见js文件第344-363行
+
+操作文件
+  ** <input type="file"> 可以上传文件的唯一控件
+  -> 当一个表单包含<input type="file">时，表单的enctype必须指定为multipart/form-data，method必须指定为post，浏览器才能正确编码并以multipart/form-data格式发送表单的数据
+
+  -> 出于安全考虑，浏览器只允许用户点击<input type="file">来选择本地文件，用JS对<input type="file">的value赋值是没有任何效果的。当用户选择了上传某个文件后，JS也无法获得该文件的真实路径
+
+  -> 通常，上传的文件都由后台服务器处理，JS可以在提交表单时对文件扩展名做检查，以便防止用户上传无效格式的文件
+
+  ** File API
+  -> HTML5的File API提供了File和FileReader两个主要对象，可以获得文件信息并读取文件，详见js文件第365-403行
+
+  ** 回调
+  -> js文件第365-403行的代码还演示了JS的一个重要的特性就是单线程执行模式
+
+  -> 在JS中，浏览器的JavaScript执行引擎在执行JS代码时，总是以单线程模式执行，任何时候JS代码都不可能同时有多于1个线程在执行
+
+  -> 在JS中，执行多任务实际上都是异步调用，如reader.readAsDataURL(file)。由于是异步操作，所以我们在JS代码中就不知道什么时候操作结束，因此需要先设置一个回调函数：
+  reader.onload = function (e) {
+    // 当文件读取完成后，自动调用此函数
+  };
+  当文件读取完成后，JavaScript引擎将自动调用我们设置的回调函数。执行回调函数时，文件已经读取完毕，所以我们可以在回调函数内部安全地获得文件内容
+
+AJAX (Asynchronous JavaScript and XML) 用JavaScript执行异步网络请求
+  ** AJAX并不是JS的规范
+
+  ** Web运作原理：一次HTTP请求对应一个页面
+
+  ** XMLHttpRequest对象 在现代浏览器上写AJAX
+  -> 低版本的IE，需使用ActiveXObject对象
+
+  -> 可以通过检测window对象是否有XMLHttpRequest属性来确定浏览器是否支持标准
+
+  -> 创建了XMLHttpRequest对象后，要先设置onreadystatechange的回调函数
+  ---> 在回调函数中，通过 readyState === 4 判断请求是否完成，若已完成，再根据 status === 200 判断是否是一个成功的响应
+
+  -> XMLHttpRequest对象的open()方法有3个参数
+  1. 指定GET或POST
+  2. 指定URL地址
+  3. 指定是否使用异步，默认true，可省略
+  ---> 千万不要把第三个参数指定为false，否则浏览器将停止响应，直到AJAX请求完成
+
+  -> 最后调用send()方法发送请求
+  ---> GET请求不需要参数，POST请求需要把body部分以字符串或者ForData对象传进去
+
+安全限制
+  ** 默认情况下，JS在发送AJAX请求时，URL的域名必须与当前页面完全一致（域名相同，协议相同，端口号相同）
+
+  ** 请求外域的URL的方法
+  1. 通过Flash插件发送HTTP请求
+  -> 其绕过浏览器的安全限制，但必须安装Flash，并且和Flash交互
+
+  2. 通过在同源域名下架设一个代理服务器来转发
+  -> JS负责把请求发送到代理服务器，代理服务器再把结果返回
+  -> 缺点：需要服务器端额外做开发
+
+  3. JSONP
+  -> 只能用GET请求，并且要求返回JavaScript
+  -> 利用了浏览器允许跨域应用JS资源的特点
+  -> JSONP通常以函数调用的形式返回，在月缅中先准备好回调函数，然后给页面动态加一个<scirpt>节点，相当于动态读取外域的JS资源，最后就等着接收回调
+
+CORS (Cross-Origin Resource Sharing)
+  ** 新的跨域策略，HTML5规范定义的如何跨域访问资源
+
+  ** 简单请求
+  1. 简单请求包括GET、HEAD和POST
+  2. POST的ContentType类型仅限application/x-www-form-urlencoded、multipart/form-data 和text/plain
+  3. 不能出现任何自定义头（例如，X-Custom: 12345）
+  4. 通常能满足90%的需求
+
+  ** 对于PUT、DELETE以及其他类型如application/json的POST请求，在发送AJAX请求之前，浏览器会发送一个OPTIONS请求（称为preflighted请求）到这个URL上，询问目标服务器是否接受，服务器必须响应并明确指出允许的Methos，浏览器确认服务器响应的Access-Control-Allow-Methods头确实包含将要发送的AJAX请求的Method，才会继续发送AJAX，否则，抛出一个错误
+
+  ** 由于以POST、PUT方式传送JSON格式的数据在REST中很常见，所以要跨域正确处理POST和PUT请求，服务器端必须正确响应OPTIONS请求
+
+Promise
+  ** ES6中统一规范，由浏览器直接支持
+
+  ** Promise例子详见js文件第405-425行
+
+  ** 串行执行异步任务
+  -> eg: job1.then(job2).then(job3).catch(handleError);
+  -> 其中job1, job2, job3都是Promise对象
+  -> 详见js文件第427-448行
+
+  ** 并行执行异步任务
+  -> 详见js文件第450-464行
+
+Canvas (HTML5新增) 幕布/画布
+  ** <canvas></canvas>
+
+  ** 由于浏览器对HTML5标准支持不一致，所以通常在<canvas>内部添加一些说明性的HTML代码
+  -> 支持，则忽略内部的HTML；不支持，则显示内部的HTML
+
+  ** 使用前可以使用 canvas.getContext 来测试浏览器是否支持Canvas
+
+  ** getContext('2d')方法 得到一个 CanvasRenderingContext2D 对象，所有的绘图操作都需要通过这个对象完成
+  -> getContext('webgl')方法 可以绘制3D图像
+
+  ** 坐标系统
+  (0, 0)       20
+     ·-----------------> X
+     |          |
+  10 |----------x
+     |           (20, 10)
+     |
+     ∨
+     Y
+
+  -> Canvas的坐标以左上角为原点，水平向右为X轴，垂直向下为Y轴，以像素为单位，所以每个点都是非负整数
+
+  ** Canvas除了能绘制基本的形状和文本，还可以实现动画、缩放、各种滤镜和像素转换等高级操作。如果要实现非常复杂的操作，考虑以下优化方案：
+  1. 通过创建一个不可见的Canvas来绘图，然后将最终绘制结果复制到页面的可见Canvas中
+  2. 尽量使用整数坐标而不是浮点数
+  3. 可以创建多个重叠的Canvas绘制不同的层，而不是在一个Canvas中绘制非常复杂的图
+  4. 背景图片如果不变可以直接用<img>标签并放到最底层

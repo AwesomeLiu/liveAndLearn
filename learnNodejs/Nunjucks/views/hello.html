@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello, {{ name }}</title>
+</head>
+<body>
+    <!-- 循环输出名字 -->
+    <h2>Fruits List</h2>
+    {% for f in fruits %}
+    <p>{{ f }}</p>
+    {% endfor %}
+    <p>Total: {{ count|hex }}</p>
+</body>
+</html>

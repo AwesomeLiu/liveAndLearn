@@ -1,0 +1,351 @@
+﻿Git教程
+
+安装Git
+  ** 在Linux上安装Git
+  1. 使用Debian或Ubuntu Linux，通过命令 `sudo apt-get install git` 安装git
+  2. 老版本的Debian或Ubuntu Linux，通过命令 `sudo apt-get install git-core` 安装git
+  3. 其他Linux版本，通过源码安装，下载源码 -> 解压 -> 输入 `./config` -> 输入 `make` -> 输入 `sudo make install` -> 完成安装
+
+  ** 在Mac OS X上安装Git
+  1. 安装homebrew，通过homebrew安装git，详见官方文档http://brew.sh/
+  2. 从AppStore安装Xcode，运行Xcode，选择菜单"Xcode"->"Preferences"，弹窗中找到"Downloads"，选择"Command Line Tools"，点击"Install"，完成安装
+
+  ** 在Windows上安装Git
+  1. 通过msysgit(https://git-for-windows.github.io)下载安装，安装完成后在命令行输入：
+
+	$ git config --global user.name "Your Name"
+	$ git config --global user.email "email@example.com"
+
+创建版本库
+  1. 创建版本库
+  (1) 使用命令行
+
+	$ mkdir learngit
+	$ cd learngit
+	$ pwd
+	/url/.../learngit
+
+  pwd命令用于显示当前目录，learngit为仓库名
+
+  或者
+
+  (2) 直接在目录文件下右键 Git Bash Here
+
+  2. 初始化版本库
+
+	$ git init
+
+  -> .git 目录默认隐藏，使用 `ls -ah` 命令可显示
+
+把文件添加到仓库
+
+  1. $ git add xxx.xx
+
+  2. $ git commit -m "blabla..."
+
+  -> `-m` 后面输入的是本次提交的说明，可以输入任何内容
+
+  -> 一次性提交多个文件
+
+  (1) $ git add file1.txt
+	  $ git add file2.txt
+	  $ git commit -m "add 2 files."
+
+  (2) $ git add file1.txt file2.txt file3.txt
+	  $ git commit -m "add 3 files."
+
+  (3) $ git add .
+      $ git commit -m "add all files."
+
+$ git status 获取仓库当前的状态
+
+$ git diff   查看不同
+
+版本回退
+  $ git log    查看文件的历史提交记录
+  -> 末尾添加 `--pretty=oneline` 简略版本的记录
+  -> 一大串的字符串是commit id(版本号)
+
+  ** HEAD     表示当前版本
+  -> HEAD^    表示上一个版本
+  -> HEAD^^   表示上上一个版本
+  -> HEAD~100 表示往上100个版本
+
+  ** $ git reset --hard HEAD^ 表示回到上一个版本
+
+  ** $ git reset --hard xxx   回到未来的版本号为xxx的版本（前提是有该版本的版本号）
+  -> xxx版本号不用写全，前7位即可
+
+  ** $ git reflog 记录每一次命令
+  -> 防止忘记新版本的版本号
+
+工作区与暂存区
+
+	+------+      +---版本库------------------+
+	|  工  |      |             HEAD          |
+	|      |      |                ↘         |
+	|      | add  |  +-----+        +------+  |
+	|  作  | ------->|     | commit |      |  |
+	|      |      |  |stage| -----> |master|  |
+	|      |      |  |     |        |      |  |
+	|  区  |      |  +-----+        +------+  |
+	+------+      +---------------------------+
+
+撤销修改
+  ** $ git checkout -- file 丢弃工作区的修改
+
+  ** 撤销修改的情况有两种
+  1. 文件自修改后还没有被放到暂存区，撤销修改后回到和版本库一模一样的状态
+  2. 文件已经添加到暂存区后，又作了修改，撤销修改就回到添加到暂存区后的状态
+
+  ** $ git reset HEAD file 撤销暂存区的修改，重新放回工作区
+  -> reset命令既可以回退版本，也可以把暂存区的修改回退到工作区
+
+删除文件
+  1. 直接删除
+  2. 使用git命令 `$ git rm file`
+
+  ** 撤销删除 `$ git checkout -- file` 把误删的文件恢复到最新版本
+  -> 只要文件已经被提交到版本库，那么永远不用担心误删
+  -> 只能恢复文件到最新版本，但会丢失最近一次提交后修改的内容
+
+远程仓库
+  ** 创建远程仓库
+  1. 创建SSH Key
+
+	$ ssh-keygen -t rsa -C "email@example.com"
+
+  2. 登录Gihub，打开 "Account settings" -> "SSH and GPG keys" -> "New SSH Key" -> 填写任意"Title"，在Key文本框填入 id_rsa.pub 文件的内容 -> "Add Key"
+
+  ** 添加远程库
+  1. 关联远程库
+
+	$ git remote add origin git@server-name:github-name/repo-name.git
+
+  -> server-name 服务器名，一般为github.com
+  -> github-name 自己的Github账户名
+  -> repo-name   远程仓库名
+
+  2. 将本地库的所有内容推送到远程库上
+
+	$ git push -u origin master
+
+  -> master为当前分支
+  -> 由于远程库是空的，第一次推送master分支时，加上 `-u` 参数
+  -> 之后使用命令 `$ git push origin master` 即可
+
+  ** 克隆远程库
+  1. $ git clone git@server-name:github-name/repo-name.git
+  2. $ git clone https://github.com/path/repo-name.git
+
+  -> Git支持多种协议，默认的 git:// 使用ssh，但也可以使用https等其他协议
+  -> 使用https协议克隆，速度慢，每次推送都必须输入口令，但在只开放http端口的情况下只能使用https，无法使用ssh协议
+
+分支管理
+  ** 创建与合并分支
+  0. master分支是一条线，Git用master指向最新的提交，再用HEAD指向master
+
+	                HEAD
+	                   ↘
+	                   master
+	                     ↓
+	○ --- ○ --- ○ --- ○
+
+  每次提交，master分支都会向前移动一步，随着不断的提交，master分支线会越来越长
+
+  1. 当创建新的分支dev时，Git新建了一个指针叫dev，指向master相同的提交，HEAD指向dev
+
+	                   master
+	                     ↓
+	○ --- ○ --- ○ --- ○
+	                     ↑
+	                    dev
+	                      ↖
+	                       HEAD
+
+  2. 现在起新的提交会使分支变成
+
+	                   master
+	                     ↓
+	○ --- ○ --- ○ --- ○ ___ ○
+	                            ↑
+	                           dev
+	                             ↖
+	                              HEAD
+
+  3. 直接把master指向dev的当前提交，就完成合并
+
+	                       HEAD
+	                          ↘
+	                          master
+	                            ↓
+	○ --- ○ --- ○ --- ○ === ○
+	                            ↑
+	                           dev
+
+  4. 合并完分支后，可以删除dev分支
+
+	                       HEAD
+	                          ↘
+	                          master
+	                            ↓
+	○ --- ○ --- ○ --- ○ --- ○
+
+  ** 创建与切换分支
+
+	$ git checkout -b dev   // 创建并切换到dev分支（处于第1步）
+
+  -> 相当于
+
+	$ git branch dev        // 创建dev分支
+	$ git checkout dev      // 切换dev分支
+
+  -> 用命令 `$ git branch` 可以查看当前分支
+
+  ** 合并分支
+
+	$ git merge dev         // 把dev分支的工作成果合并到master分支上（处于第3步）
+
+  -> 不合并分支则处于第2步
+
+  -> 合并中的 Fast-forward 信息表示此次合并是"快进模式"，即直接把master指向dev的当前提交，合并速度非常快
+  ---> 通常合并分支时，Git会用Fast forword模式，但这种模式下，删除分支后会丢掉分支信息
+  ---> 使用 `--no-ff` 参数可以禁用"快进模式"，Git会在merge时生成一个新的commit，可以从分支历史上查看分支信息
+
+	$ git merge --no-ff -m "merge with no-ff" dev
+
+  ---> 本次合并需要创建一个新的commit，所以加上 `-m` 参数，并把commit描述写进去
+
+  -> 无法使用"快进模式"的情况见下文 ·解决冲突· 部分
+
+  ** 删除分支
+
+	$ git branch -d dev     // 删除dev分支（处于第4步）
+
+	-> $ git branch -D dev  // 强行删除dev分支（丢弃一个没有被合并过的分支）
+
+  ** 因为创建、合并和删除分支非常快，所以Git鼓励使用分支完成某个任务，合并后再删掉分支，这和直接在master分支上工作效果是一样的，但过程更安全
+
+解决冲突
+  ** 若在分支dev上提交了一次，切换回master分支又进行了一次提交
+
+	                       HEAD
+	                          ↘
+	                          master
+	                            ↓
+	○ --- ○ --- ○ --- ○ --- ○
+	                       \
+	                        ○
+	                        ↑
+	                       dev
+
+  -> 这种情况Git无法执行"快进模式"，只能试图把各自的修改合并起来，若修改内容不一样则必须手动解决冲突后再提交
+
+  -> 此时文件内容会被Git用 `<<<<<<<` `=======` `>>>>>>>` 标记处不同分支的内容，手动修改后可再次提交
+
+	                              HEAD
+	                                 ↘
+	                                 master
+	                                   ↓
+	○ --- ○ --- ○ --- ○ --- ○ --- ○
+	                      \            /
+	                       ---- ○ ----
+	                            ↑
+	                           dev
+
+  -> 最后删除dev分支
+
+  	                              HEAD
+	                                 ↘
+	                                 master
+	                                   ↓
+	○ --- ○ --- ○ --- ○ --- ○ --- ○
+
+  -> 使用 `$ git log --graph --pretty=oneline --abbrev-commit` 命令查看分支的合并情况
+
+分支策略
+  ** 在实际开发中，应按照几个基本原则进行分支管理
+  1. master分支应该非常稳定的，也就是仅用来发布新版本，平时不能再上面干活
+  2. 干活都在dev分支上，但dev分支是不稳定的，所有人都在dev分支上干活，时不时往dev分支上合并
+
+	○ -------------- ○ ---------------- ○      master
+	 \                /                    \
+	  ○ --- ○ --- ○ --- ○ ----- ○ --- ○     dev
+	  |\      \     /        \     /  \    /
+	  | ○ --- ○ -/--- ○ -- ○ -/-- ○  /       A
+	   \          /              /       /
+	    ○ ----- ○ --- ○ ---- ○ ---- ○        B
+
+Bug分支
+	$ git stash 把当前工作现场储藏起来，等恢复后继续工作
+
+	$ git stash list 查看工作现场
+
+  ** 恢复现场
+  1. $ git stash apply
+  -> 恢复但不删除stash内容，可以通过 `$ git stash drop` 命令来删除stash内容
+
+  -> 多个stash恢复时可用 `$ git stash apply stash@{0}`
+
+  2. $ git stash pop
+  -> 恢复的同时把stash内容也删除了
+
+$ git remote 查看远程库的信息
+
+$ git remote -v 显示更详细的信息
+
+$ git push origin xxx 推送xxx分支
+
+1. master   主分支，要时刻与远程同步
+2. dev      开发分支，所有人都需要在上面工作，需要与远程同步
+3. bug      只用于在本地修复bug，没有必要推送到远程
+4. feature  是否推送到远程取决于是否在上面开发
+
+$ git pull 把最新提交抓取下来
+
+多人协作
+  1. 试图用 `$ git push origin branch-name` 推送自己的修改
+  2. 推送失败，因为远程分支比你的本地更新，需要先用 `git pull` 试图合并
+  3. 如果合并有冲突，则解决冲突，并在本地提交
+  4. 没有冲突或者解决冲突后，再用 `$ git push origin branch-name` 推送即可
+
+  ** 如果git pull提示"no tracking information"，说明本地分支和远程分支的链接关系没有创建，用命令 `git branch --set-upstream branch-name origin/branch-name` 创建链接
+
+  ** 在本地创建和远程分支对应的分支，使用git checkout -b branch-name origin/branch-name，本地和远程分支的名称最好一致
+
+标签管理
+  ** 创建标签
+	$ git tag tag-name 创建标签
+
+	$ git tag 查看所有便签
+
+	$ git tag tag-name commit-id 给commit id为commit-id的commit打上标签
+
+  -> 标签不是按时间顺序列出的，是按照字母排序的
+
+	$ git show tag-name 查看标签信息
+
+	$ git tag -a tag-name -m "blabla..." commit-id 创建带有标签说明的标签
+  -> `-a` 指定标签名
+  -> `-m` 指定说明文字
+  -> `-s` 用私钥签名一个标签（可省略`-a`），签名采用PGP签名，必须安装gpg，参考GnuPG帮助文档配置key
+
+  -> 创建的标签都只存储在本地，不会自动推送到远程
+
+  ** 操作标签
+	$ git push origin tag-name 将标签推送到远程
+
+	$ git push origin --tags 一次性推送全部尚未推送到远程的本地标签
+
+	$ git tag -d tag-name 删除标签
+
+	$ git push origin :refs/tags/tag-name 删除远程标签（前提是先把本地标签删除）
+
+配置别名
+	$ git config --global alias.st status // 将 `st` 代替 `status` 命令
+
+	$ git config --global alias.unstage 'reset HEAD' // 将 `unstage` 代替 `reset HEAD` 命令
+
+  -> 配置Git时，加上 `--global` 是针对当前用户起作用的，不加只针对当前的仓库起作用
+  -> 查看配置可以在 .git/config 文件中查看，当前用户的Git配置文件放在用户主目录下的一个隐藏文件 .gitconfig 中
+  -> 要想删除别名，直接把对应行删掉即可

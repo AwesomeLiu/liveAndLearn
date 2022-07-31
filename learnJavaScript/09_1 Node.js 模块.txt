@@ -1,0 +1,167 @@
+**** 本章的代码将在VS Code上给出，文件在E:\NodeCode里 ****
+
+严格模式
+  1. 在JS文件开头写'use strict'
+  2. node --use_strict xxx.js
+
+交互模式与直接运行
+  1. 直接输入 node 进入交互模式，输入一行就执行一行
+  2. 直接运行 node xxx.js 文件，一次性执行xxx.js文件
+
+模块
+  ** module.exports = variable;       一个模块对外暴露变量（函数）
+
+  ** var ref = require('module_name') 一个模块引用其他模块暴露的变量
+  -> module_name 指的是模块文件的文件名，不是模块名
+  -> 在使用require()引入模块的时候，请注意模块的相对路径
+
+  ** CommonJS规范
+  -> 每个.js文件都是一个模块，它们内部各自使用的变量名和函数名都互不冲突
+
+  ** 深入了解
+  -> 实现“模块”功能的奥妙就在于JavaScript是一种函数式编程语言，它支持闭包
+  -> 如果把一段JS代码用一个函数包装起来，这段代码的所有“全局”变量就变成了函数内部的局部变量
+
+  -> Node事先准备一个对象module实现模块的输出
+
+  var module = {
+      id: 'hello',
+      exports: {}
+  };
+  var load = function (module) {
+      // 读取的hello.js代码:
+      function greet(name) {
+          console.log('Hello, ' + name + '!');
+      }
+
+      module.exports = greet;
+      // hello.js代码结束
+      return module.exports;
+  };
+  var exported = load(module);
+  // 保存module:
+  save(module, exported);
+
+  -> 在hello.js中可以直接使用变量module原因就在于它实际上是函数的一个参数
+  -> 通过把参数module传递给load()函数，hello.js就顺利地把一个变量传递给了Node执行环境，Node会把module变量保存到某个地方
+  -> 由于Node保存了所有导入的module，当我们用require()获取module时，Node找到对应的module，把这个module的exports变量返回，这样，另一个模块就顺利拿到了模块的输出
+
+  ** module.exports VS exports
+  -> 在Node环境中，有两种方法可以在一个模块中输出变量
+  function hello(...) {...}
+  function greet(...) {...}
+
+  1. 对module.exports赋值
+  module.exports = {
+      hello: hello,
+      greet: greet
+  };
+
+  2. 直接使用exports
+  exports.hello = hello;
+  exports.greet = greet;
+  ---> 但不可以直接对exports赋值
+  exports = {
+      hello: hello,
+      greet: greet
+  };
+  代码可以执行，但是模块并没有输出任何变量
+
+  -> Node的加载机制
+   * 首先，Node会把整个待加载的hello.js文件放入一个包装函数load中执行。在执行这个load()函数前，Node准备好了module变量
+  var module = {
+      id: 'hello',
+      exports: {}
+  };
+
+   * load()函数最终返回module.exports
+
+  var load = function (exports, module) {
+      // hello.js的文件内容
+      ...
+      // load函数返回:
+      return module.exports;
+  };
+  var exported = load(module.exports, module);
+
+   * 默认情况下，Node准备的exports变量和module.exports变量实际上是同一个变量，并且初始化为空对象{}，于是，我们可以写：
+  exports.foo = function () { return 'foo'; };
+  exports.bar = function () { return 'bar'; };
+  或
+  module.exports.foo = function () { return 'foo'; };
+  module.exports.bar = function () { return 'bar'; };
+
+   * 但是，如果我们要输出的是一个函数或数组，那么，只能给module.exports赋值
+   * 给exports赋值是无效的，因为赋值后，module.exports仍然是空对象{}
+
+   * 如果要输出一个键值对象{}，可以利用exports，并继续在上面添加新的键值
+   * 如果要输出一个函数或数组，必须直接对module.exports对象赋值
+   * 强烈建议使用module.exports = xxx的方式来输出模块变量
+
+基本模块
+  ** global  Node.js环境中的全局对象
+
+  ** process 代表Node.js进程
+  -> process.nextTick() 在下一次事件响应中执行代码
+
+  ** fs 文件系统模块，负责读写文件
+  -> fs模块同时提供异步和同步的方法
+  ---> 异步读取文件，详见fs文件夹下readFile.js文件
+  ---> 同步读取文件，详见fs文件夹下readFileSync.js文件
+
+  -> fs.writeFile() 将数据写入文件，详见fs文件夹下writeFile.js文件
+
+  -> fs.stat()       异步获取文件或目录的详细信息，详见fs文件夹下stat.js文件
+  ---> fs.statSync() 同步获取文件或目录的详细信息
+
+  -> 由于Node环境执行的JS代码是服务器端代码，所以，绝大部分需要在服务器运行期反复执行业务逻辑的代码，必须使用异步代码，否则，同步代码在执行时期，服务器将停止响应
+
+  -> 服务器启动时如果需要读取配置文件，或者结束时需要写入到状态文件时，可以使用同步代码，因为这些代码只在启动和结束时执行一次，不影响服务器正常运行时的异步执行
+
+  ** stream模块
+  -> 支持“流”这种数据结构
+  ---> 流是一种抽象的数据机构，特点是数据是有序的，必须依次读取或写入，不能像Array那样随机定位
+
+  -> 在Node.js中，流也是一个对象，只需响应流的事件即可
+  1. data事件  表示流的数据已经可以读取
+  2. end事件   表示流已经到末尾，没有数据可以读取
+  3. error事件 表示出错
+
+  -> 从文件流读取文本内容，详见stream文件夹下readStream.js文件
+  -> write()方法 以流的形式写入文件，最后以end()结束，详见stream文件夹下writeStream.js文件
+
+  -> 所有可以读取数据的流都继承自stream.Readable
+  -> 所有可以写入数据的流都继承自stream.Writable
+
+  -> pipe() 将一个Readable流和一个Writeable流串起来，所有的数据自动从Readable流进入Writable流，详见stream文件夹下pipe.js文件
+
+  ** http模块
+  -> HTTP协议，详见https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001432011939547478fd5482deb47b08716557cc99764e0000
+
+  -> HTTP服务器
+  ---> 应用程序并不直接和HTTP协议打交道，而是操作http模块提供的request和response对象
+  1. request对象 封装了HTTP请求，调用request对象的属性和方法可以拿到所有HTTP请求的信息
+  2. response对象 封装了HTTP响应，调用response对象的方法可以把HTTP响应返回个浏览器
+
+  -> 简单的Web程序，对所有请求都返回'Hello world!'，详见http文件夹下hello.js文件
+
+  -> 文件服务器
+  ---> url模块  解析URL
+  -----> Url.parse() 将一个字符串解析为一个Url对象，详见http文件夹下url.js文件
+  ---> path模块 处理本地文件目录，它可以方便地构造目录，详见http文件夹下path.js文件
+
+  ** crypto 提供通用的加密和哈希算法的模块
+  -> MD5 SHA1 SHA256 SHA512 一种常用的哈希算法，用于给任意数据一个“签名”。这个签名通常用一个十六进制的字符串表示
+  ---> 不需要密钥，详见crypto文件夹下MD5.js文件
+
+  -> Hmac 可以利用MD5或SHA1等哈希算法，但需要密钥，详见crypto文件夹下Hmac.js文件
+  ---> 只要密钥发生了变化，那么同样的输入数据也会得到不同的签名，因此，可以把Hmac理解为用随机数“增强”的哈希算法
+
+  -> AES 对称加密算法，加解密都用同一个密钥
+  ---> crypto模块提供了AES支持，但需要自己封装好函数，详见crypto文件夹下AES.js文件
+
+  -> DH (Diffie-Hellman) 一种密钥交换协议，让双方在不泄漏密钥的情况下协商出一个密钥，详见crypto文件夹下DH.js文件
+
+  -> crypto模块也可以处理数字证书
+  -> 数字证书通常用在SSL连接，也就是Web的https连接
+  -> 一般情况下，https连接只需要处理服务器端的单向认证，如无特殊需求（例如自己作为Root给客户发认证证书），建议用反向代理服务器如Nginx等Web服务器去处理证书

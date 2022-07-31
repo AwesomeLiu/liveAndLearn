@@ -1,0 +1,170 @@
+﻿**** 本章的代码将在VS Code上给出，文件在E:\NodeCode里 ****
+
+访问MySQL
+  ** 在命令行窗口输入 mysql -u root -p，然后输入root口令后，就连接到MySQL服务器
+  -> 由于没有指定 --host 参数，所以连接的是localhost，即本机的MySQL服务器
+  -> exit 退出MySQL命令行模式
+
+  ** 对于Node.js程序使用最广泛的MySQL Node.js驱动程序是 mysql，可以直接用npm安装
+
+  ** 若直接使用mysql包提供的接口，编写的代码就比较底层
+  -> 查询
+	connection.query('SELECT * FROM users WHERE id = ?', ['123'], function (err, rows) {
+		if (err) {
+			// error
+		} else {
+			for (let row in rows) {
+				processRow(row);
+			}
+		}
+	});
+
+ORM
+  ** eg:
+	mysql>select * from pets;
+	+----+--------+------------+
+	| id | name   | birth      |
+	+----+--------+------------+
+	|  1 | Gaffey | 2017-07-07 |
+	|  2 | Odie   | 2017-07-17 |
+	+----+--------+------------+
+	2 rows in set (0.00 sec)
+
+    对于一个二维数据库表，包含多行多列，每行都可以用一个JS对象表示，如第一行可表示为：
+    {
+    	"id": 1,
+    	"name": "Gaffey",
+    	"birth": "2017-07-07"
+    }
+
+    这就是ORM技术：Object-Relational Mapping 把关系数据库的表结构映射到对象上
+
+  ** Sequelize ORM框架 操作数据库
+  -> 读写都是JS对象
+
+  -> 用Sequelize查询
+	Pet.findAll().then(function (pets) {
+		for (let pet in pets) {
+			console.log(`${pet.id}: ${pet.name}`);
+		}
+	}).catch(function (err) {
+		// error
+	});
+
+  -> Sequelize返回的对象是Promise，所以可以用then()和catch()分别异步响应成功和失败
+  ---> 或者使用ES7的await来调用（推荐）
+	(async () => {
+		var pets = await Pet.findAll();
+	})();
+
+实战
+  在test数据库中创建一个pets表：
+
+	// grant命令是创建MySQL的用户名和口令，均为www，并赋予操作test数据库的所有权限
+	grant all privileges on test.* to 'www'@'%' identified by 'www';
+	// use命令把当前数据库切换为test
+	use test;
+	// 创建pets表
+	create table pets (
+		id varchar(50) not null,
+		name varchar(100) not null,
+		gender bool not null,
+		birth varchar(10) not null,
+		createdAt bigint not null,
+		updatedAt bigint not null,
+		version bigint not null,
+		primary key (id)
+	) engine=innodb;
+
+  然后，建立sequelize工程：
+
+	sequelize/
+	|
+	+-- .vscode/
+	| |
+	| +-- launch.json <-- VSCode配置文件
+	|
+	+-- init.txt <-- 初始化SQL命令
+	|
+	+-- config.js <-- MySQL配置文件
+	|
+	+-- app.js <-- 使用koa的js文件
+	|
+	+-- package.json <-- 项目描述文件
+	|
+	+-- node_modules/ <-- npm安装的所有依赖包
+
+  然后添加sequelize和mysql依赖包
+  -> mysql是驱动，不直接使用，而是提供给sequelize使用
+  -> config.js配置文件
+
+	var config = {
+		database: 'test', // 使用的数据库
+		username: 'www', // 用户名
+		password: 'www', // 口令
+		host: 'localhost', // 主机名
+		port: 3306 // 端口号，MySQL默认3306
+	};
+
+	module.exports = config;
+
+  -> 把通过sequelize.define()返回的Pet称为Model，它表示一个数据模型
+
+  -> 使用Sequelize操作数据库的一般步骤是
+  1. 通过某个Model对象的findAll()方法获取一个或一组Model实例
+  ---> 每个实例都可以直接通过 JSON.stringify 序列化为JSON字符串
+  2. 若要更新实例，先对实例属性赋予新的值，再调用save()方法
+  3. 若要删除实例，直接调用destroy()方法
+
+  -> 详见sequelize文件夹
+
+Model
+  ** 为了统一Model，遵守同一个规范，需要定义Model
+  -> Model存放的文件夹必须在models内，并且以Model名字命名，如Pet.js、User.js等
+
+  -> 每个Model必须遵守以下规范：
+  1. 统一主键，名称必须是id，类型必须是STRING(50)
+  2. 主键可以自己指定，也可以由框架自动生成（如果为null或undefined）
+  3. 所有字段默认为NOT NULL，除非显式指定
+  4. 统一timestamp机制，每个Model必须有createdAt、updatedAt和version，分别记录创建时间、修改时间和版本号，类型均为BIGINT
+  ---> createdAt和updatedAt 存储时间戳，无需处理时区，排序方便
+  ---> version 每次修改时自增
+
+  -> 所以，不要直接使用Sequelize的API，而是通过 db.js 间接地定义Model
+  ---> db.js 统一Model的定义的js文件，详见model_sequelize文件夹下的 db.js 文件
+
+  -> eg: User.js的定义
+
+	const db = require('../db');
+	module.exports = db.defineModel('users', {
+		email: {
+			type: db.STRING(100),
+			unique: ture
+		},
+		password: db.STRING(100),
+		name: db.STRING(100),
+		gender: db.BOOLEAN
+	});
+
+数据库配置
+  ** 把config.js拆成3个配置文件
+  1. config-default.js  存储默认的配置
+  2. config-override.js 存储特定的配置
+  3. config-test.js     存储用于测试的配置
+
+  ** 详见model_sequelize\configs文件夹下的同名文件和model_sequelize文件夹下 config.js 文件
+
+  ** 具体的规则是：
+  1. 读取config-default.js
+  2. 如果不是测试环境，就读取config-override.js，如果文件不存在，就忽略
+  3. 如果是测试环境，就读取config-test.js
+
+  -> 这样做的好处是:
+  1. 开发环境下，团队统一使用默认的配置，并且无需config-override.js
+  2. 部署到服务器时，由运维团队配置好config-override.js，以覆盖config-override.js的默认设置
+  3. 测试环境下，本地和CI服务器统一使用config-test.js，测试数据库可以反复清空，不会影响开发
+
+  ** 配置文件表面上写起来很容易，但既要保证开发效率，又要避免服务器配置文件泄漏，还要能方便地执行测试，就需要一开始搭建出好的结构，才能提升工程能力
+
+使用Model
+  ** 编写一个model.js自动扫描并导入所有Model，详见model_sequelize文件夹下的 model.js 文件

@@ -1,0 +1,53 @@
+**** 本章的代码将在VS Code上给出，文件在E:\NodeCode里 ****
+
+mocha 一种单元测试框架，既可以在浏览器环境下运行，也可以在Node.js环境下运行
+  ** mocha的主要特点有：
+  1. 既可以测试简单的JS函数，又可以测试异步代码，因为异步是JS的特性之一
+  2. 可以自动运行所有测试，也可以只运行特定的测试
+  3. 可以支持before、after、beforeEach和afterEach来编写初始化代码
+
+编写测试
+  ** 简单测试，详见mocha\sum文件夹
+
+运行测试
+  1. 打开命令提示符，切换到测试文件的目录，然后执行命令
+  node_modules\mocha\bin\mocha
+
+  2. 在package.json中添加命令
+  {
+  	...
+
+  	"scripts": {
+  		"test": "mocha"
+  	},
+
+  	...
+  }
+  然后在测试文件的目录下执行命令：
+  npm test
+
+  3. 在VS Code中创建配置文件 .vscode/launch.json，添加 Test 配置，便可在 VS Code 中打开Debug面板，选择Test，运行即可
+
+before和after
+  ** before     在整个测试前执行
+  ** after      在整个测试结束后执行
+
+  ** beforeEach 在单个测试前执行
+  ** afterEach  在单个测试结束后执行
+
+  ** 过程大致如下：
+  before
+  	beforeEach
+  		...
+  	afterEach
+
+  	beforeEach
+  		...
+  	afterEach
+  after
+
+异步测试
+  ** 详见mocha\async_sum文件夹
+
+http测试
+  ** 详见mocha\http_koa文件夹

@@ -1,0 +1,72 @@
+HTML模板
+  ** 引用库文件
+  1. react.js     React核心库
+  2. react-dom.js 提供与DOM相关的功能
+  3. browser.js   将JSX语法转为JS语法
+
+  -> 实际上线时，应将browser.js放到服务器完成
+
+	$ babel src --out-dir build
+
+  将src子目录的js文件进行语法转换，转码后的文件全部放在build子目录
+
+  ** JSX写法，与JS不兼容
+
+	<script type="text/babel"></script>
+
+ReactDOM.render()
+  ** 用于将模板转为HTML语言，并插入指定的DOM节点
+
+	ReactDOM.render(
+		<h1>Hello, world!</h1>,
+		document.getElementById('root')
+	);
+
+JSX语法
+  ** HTML语言直接在JS语言中，不加任何引号，遇到HTML标签用 `<` 开头，遇到代码块用 `{` 开头
+
+	ReactDOM.render(
+		<div>
+		{
+			...
+		}
+		</div>,
+		document.getElementById('root')
+	);
+
+  -> className - class
+  -> tabIndex  - tabindex
+
+  ** JSX防止注射攻击
+
+	const title = response.potentiallyMaliciousInput;
+	// This is safe:
+	consot element = <h1>{title}</h1>;
+
+  -> 默认情况下，React DOM会在渲染之前转义嵌入在JSX中的任何值
+  -> 因此，它确保永远不会注入任何未明确写入应用程序的内容
+  -> 在呈现之前，所有内容都将转换为字符串，这有助于防止XSS（cross-site-scripting，跨站点脚本）攻击
+
+  ** JSX方式表现对象
+
+	// 方法一
+	const element = (
+		<h1 className="greeting">
+			Hello, world!
+		</h1>
+	);
+	// 方法二
+	const element = React.createElement(
+		'h1',
+		{className: 'greeting'},
+		'Hello, world!'
+	);
+
+渲染元素
+
+元素
+  ** React元素，区别于组件，一旦创建了元素后，不能更改其子项或属性
+
+	const element = <h1>Hello, world!</h1>
+
+组件

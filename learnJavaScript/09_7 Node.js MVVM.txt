@@ -1,0 +1,149 @@
+**** 本章的代码将在VS Code上给出，文件在E:\NodeCode里 ****
+
+MVVM (Model-View-ViewModel)
+  ** MVVM的设计思想：关注Model的变化，让MVVM框架去自动更新DOM的状态，从而把开发者从操作DOM的繁琐步骤中解脱出来
+
+常用的MVVM框架
+  1. Vue.js (2.0) 入门容易，安装简单，能直接在页面写JS
+  2. Angular      Google出品，名气大，但很难用
+  3. Backbone.js  入门非常困难，自身API太多
+  4. Ember        一个大而全的框架，但想写个Hello world都很困难
+
+编写MVVM
+  1. Model是一个JS对象，包含两个属性
+
+	{
+		name: 'Robot',
+		age: 15
+	}
+
+  2. 负责显示的DOM节点可用 {{ name }} 和 {{ age }}来引用Model的属性
+
+	<div id="vm">
+		<p>Hello, {{ name }}!</p>
+		<p>You are {{ age }} years old.</p>
+	</div>
+
+  3. 用Vue将两者关联起来
+
+  ** 在<head>内部编写的JS代码时，需要用jQuery把MVVM的初始化代码推迟到页面加载完毕后执行，否则，直接在<head>内执行MVVM代码时，DOM节点尚未被浏览器加载，初始化将失败
+
+  ** 正确的写法如下
+
+	<html>
+	<head>
+		<script src="/static/js/jquery.js"></script>
+		<script src="/static/js/vue.js"></script>
+		<script>
+			// 初始化代码
+		</script>
+	</head>
+
+	<body>
+		...
+
+		<div id="vm">
+			<p>Hello, {{ name }}!</p>
+			<p>You are {{ age }} years old.</p>
+		</div>
+
+		...
+	</body>
+	</html>
+
+  -> 核心代码
+
+	var vm = new Vue({
+		el: '#vm',
+		data: {
+			name: 'Robot',
+			age: 15
+		}
+	});
+
+  -> el 指定被Model绑定的DOM根节点，语法同jQuery，该节点及节点内部是Vue可操作的View
+
+  -> data 指定Model，并初始化其属性，在View内部可通过 {{ xxx }} 来引用Model的某个属性
+
+单向绑定
+  ** 在Vue中，可以直接用{{ xxx }}绑定某个属性，如果属性关联的是对象，还可以用多个.(点)引用，{{ xxx.a }}
+
+  ** v-text 另一种单项绑定方法
+
+	<p>Hello, <span v-text="name"></span></p>
+
+  -> 这种写法是把指令写在HTML节点的属性上，会被Vue解析，该节点的文本内容被绑定为Model的指定属性
+
+双向绑定
+  ** 当用户更新了View，Model的数据也自动更新，这种情况就是双向绑定
+
+  ** 处理事件
+  -> <form id="vm" v-on:submit.prevent="register"></form>
+  ---> v-on:submit="register" 自动监听表单的submit事件，并调用register方法处理该事件
+  ---> .prevent 阻止事件冒泡，浏览器不在处理<form>的submit事件
+
+  ** 详见MVVM_form文件夹
+
+同步DOM结构
+  ** v-for 把数组和一组<li>元素绑定
+
+	<ol>
+		<li v-for="t in todos">
+			<dl>
+				<dt>{{ t.name }}</dt>
+				<dt>{{ t.description }}</dt>
+			</dl>
+		</li>
+	</ol>
+
+  -> 在浏览器console中用 window.vm.todos[0].name="计划有变" 查看View的变化
+  -> 或通过 window.vm.todos.push({name:'新计划', description:'blabla...'}) 来增加一个数组元素，从而自动添加一个<li>元素
+
+  ** Vue能够监听Model状态的变化，因为JS语言本身提供了 Proxy 或者 Object.observe() 机制来监听对象状态的变化
+  -> 但对于数组元素的赋值，却没有办法直接监听，因此，如果直接对数组元素赋值会导致Vue无法更新View
+
+  -> 正确的方法是对数组元素进行更新
+
+  vm.todos[0].name = 'New name';
+  vm.todos[0].description = 'New description';
+
+  -> 或通过 splice() 方法，删除某个元素后，再添加一个元素达到赋值的效果
+
+  var index = 0;
+  var newElement = {...};
+  vm.todos.splice(index, 1, newElement);
+
+  -> Vue可以监听数组的 splice / push / unshift 等方法调用，依此正确更新View
+
+集成API
+  ** 将简单的TODO应用变成一个用户能使用的Web应用，需解决以下几个问题
+  1. 用户的TODO数据应该从后台读取
+  2. 对TODO的增删改必须同步到服务器后端
+  3. 用户在View上必须能够修改TODO
+
+  ** 在api.js文件中，用数组在服务器端模拟一个数据库，实现4个API
+  1. GET /api/todos        返回所有TODO列表
+  2. POST /api/todos       创建一个新的TODO，并返回创建后的对象
+  3. PUT /api/todos/:id    更新一个TODO，并返回更新后的对象
+  4. DELETE /api/todos/:id 删除一个TODO
+
+  -> 需增加一个id属性，来唯一标识一个TODO
+
+  ** 把Model的更新同步到服务器端的方法
+  1. 直接用jQuery的AJAX调用REST API
+  2. 使用vue-resource
+  -> 可以给VM对象加上一个 $resource 属性，通过 $resource 来方便操作API
+  -> 使用vue-resource只需要在导入vue.js后加一行
+
+	<script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
+
+  ** 详见vue_todo文件夹
+
+在线电子表格
+  ** 详见miniexcel文件夹
+
+MVVM的适用范围
+  ** MVVM最大优势是编写前端逻辑非常复杂的页面，尤其是需要大量DOM操作的逻辑，利用MVVM可以极大地简化前端页面的逻辑
+
+  ** 需要SEO (Search Engine Optimization)的页面，如新闻、博客、文档等，不能使用MVVM展示数据
+  -> 因为这些页面需要被搜索引擎索引，而搜索引擎无法获取使用MVVM并通过API加载的数据

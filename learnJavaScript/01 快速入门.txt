@@ -1,0 +1,61 @@
+﻿JavaScript包含以下几种数据类型：
+  1. String
+  2. Number/Boolean/Null/Undefined
+  3. Array/Object
+
+String 字符串
+  '' (单引号)
+  "" (双引号)
+  `` (反引号，ES6新增，多行字符串表示，详见js文件第1-4行)
+  +  (字符串连接)
+  ${...} (模板字符串，ES6新增，详见js文件第6-9行)
+
+  String.toUpperCase() 全部变为大写
+  String.toLowerCase() 全部变为小写
+  String.indexOf()     搜索指定字符串出现的位置
+  String.substring()   返回指定索引区间的子串
+
+Array 数组
+  Array.length    获取数组长度；直接对其赋值会改变数组(不建议)
+
+  Array.indexOf() 搜索指定字符串出现的位置
+  Array.slice()   返回指定索引区间的子数组
+
+  Array.push()    在数组的末尾添加元素
+  Array.pop()     移除数组的最后一个元素
+  Array.unshift() 在数组的头部添加元素
+  Array.shift()   移除数组的第一个元素
+  Array.splice()  修改数组，详见js文件第11-18行
+
+  Array.sort()    对数组进行排序
+  Array.reverse() 反转数组
+
+  Array.concat()  连接数组
+  Array.join()    将数组的每个元素用指定的字符串连接，形成新的字符串
+  String.split()  将字符串按指定的形式进行分割，构成新的数组
+
+Object 对象
+  {...}
+
+  in               判断一个属性是否存在，包含继承得到的
+  hasOwnProperty() 判断一个属性是否是自身拥有的
+
+条件判断
+  ** JavaScript把null/undefined/0/NaN/''视为false，其他值一概视为true
+
+循环
+  ** for (var ... in ...) 把一个对象的所有属性依次循环，得到的值为String类型
+
+Map与Set (ES6新增的数据类型)
+  初始化Map需要一个二维数组，详见js文件第20-27行
+
+  Set与Map类似，但不存储value，详见js文件第29-34行
+
+iterable
+  ** 遍历Array可以采用下标循环，遍历Map和Set就无法使用下标。为了统一集合类型，ES6标准引入了新的iterable类型，Array、Map和Set都属于iterable类型
+
+  ** 具有iterable类型的集合可以通过 for ... of 循环遍历
+
+  ** for ... of 循环是ES6新增的语法，与 for ... in 的比较见js文件第36-48行
+
+  ** forEach 接收一个函数，每次迭代自动回调该函数，详见js文件第50-59行

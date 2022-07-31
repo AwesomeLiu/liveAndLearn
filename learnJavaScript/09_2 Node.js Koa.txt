@@ -1,0 +1,129 @@
+**** 本章的代码将在VS Code上给出，文件在E:\NodeCode里 ****
+
+Node.js开发Web服务器端有几个显著的优势
+1. 后端语言是JavaScript, 以前掌握前端JavaScript的开发人员, 现在可以同时编写后端代码
+2. 前后端统一使用JavaScript, 没有切换语言的障碍
+3. 速度快, 非常快！这得益于Node.js天生是异步的
+
+常见的Web框架包括：Express, Sails.js, koa, Meteor, DerbyJS, Total.js, restify……
+ORM框架比Web框架要少一些：Sequelize, ORM2, Bookshelf.js, Objection.js……
+模版引擎PK：Jade, EJS, Swig, Nunjucks, doT.js……
+测试框架包括：Mocha, Expresso, Unit.js, Karma……
+构建工具有：Grunt, Gulp, Webpack……
+
+koa
+  ** koa是Express的下一代基于Node.js的web框架
+
+  ** Express是第一代最流行的web框架，它对Node.js的http进行了封装，详见koa文件夹下Express.js文件
+
+  ** 虽然Express的API很简单，但是它是基于ES5的语法，要实现异步代码，只能使用回调，详见koa文件夹下Express.js文件
+
+  ** koa 1.0
+  -> 使用generator实现异步，详见koa文件夹下koa.js文件
+  ---> 用generator实现异步比回调简单了不少，但是generator的本意并不是异步
+
+  ** koa 2.0
+  -> 完全使用Promise并配合async来实现异步
+  -> 出于兼容性考虑，目前koa 2仍支持generator的写法
+
+koa入门
+  ** 创建koa2工程，详见koa_app文件夹下app.js文件
+  -> 由async标记的函数称为异步函数
+  -> 在异步函数中，用 await next(); 处理下一个异步函数
+  -> async和await两个关键字均在ES7引入
+
+  ** koa的安装
+  1. 用npm命令直接安装koa
+  -> 打开命令提示符，把当前目录切换到程序目录，然后执行命令
+  ..\..\...\xxx>npm install koa -g
+
+  2. 在程序目录下创建一个package.json，完整的文件内容如下
+	{
+	    "name": "hello-koa2",
+	    "version": "1.0.0",
+	    "description": "Hello Koa 2 example with async",
+	    "main": "app.js",
+	    "scripts": {
+	        "start": "node app.js"
+	    },
+	    "keywords": [
+	        "koa",
+	        "async"
+	    ],
+	    "author": "Michael Liao",
+	    "license": "Apache-2.0",
+	    "repository": {
+	        "type": "git",
+	        "url": "https://github.com/michaelliao/learn-javascript.git"
+	    },
+	    "dependencies": {
+	        "koa": "2.0.0"
+	    }
+	}
+  ---> 其中，dependencies描述了工程依赖的包以及版本号
+  ---> 其他字段均用来描述项目信息，可任意填写
+  ---> 然后，在程序目录下执行 npm install 就可以把所需包以及依赖包一次性全部装好
+
+  -> 第二个方法更靠谱，因为只要在package.json正确设置依赖，npm就会把所有用到的包都装好
+
+  -> 任何时候都可以直接删除整个node_modules目录，用 npm install 命令可以完整地重新下载所有依赖
+  -> 这个目录不应该被放入版本控制中
+
+  ** koa middleware
+  -> koa的执行逻辑，核心代码是
+	app.use(async (ctx, next) => {
+	    await next();
+	    ctx.response.type = 'text/html';
+	    ctx.response.body = '<h1>Hello, koa2!</h1>';
+	});
+  每收到一个http请求，koa就会调用通过 app.use() 注册的async函数，并传入ctx和next参数
+
+  koa把很多async函数组成一个处理链，每个async函数都可以处理事情，通过 await next(); 来调用下一个async函数，把async函数称为middleware，详见koa_app文件夹下middleware.js文件
+
+  -> ctx对象简写的方法，ctx.url相当于ctx.request.url，ctx.type相当于ctx.response.type
+
+处理URL
+  ** koa-router 负责处理URL映射，koa_app文件夹下koa-router.js文件
+
+  ** router.get('/path', async fn)  处理get请求
+
+  ** router.post('/path', async fn) 处理post请求
+  -> Node.js提供的原始request对象，koa提供的request对象都不提供解析request的body的功能
+
+  ** koa-bodyparser 解析原始request请求，并把解析后的参数绑定到ctx.request.body中，详见koa_app文件夹下koa-bodyparser.js文件
+
+  ** 类似的，put/delete/head请求也可以由router处理
+
+  ** 重构，详见koa_url文件夹
+
+Nunjucks 模板引擎 基于模板配合数据构造出字符串输出的一个组件
+  ** 转义     对特殊字符要转义，避免受到XSS攻击
+  ** 格式化   对不同类型的变量要格式化，货币类型 12,345.00，日期类型 2016-01-01
+  ** 简单逻辑 按条件输出内容
+
+  ** 使用模板引擎
+  funcction render(view, model) {...}
+  -> view  模板的名称，又称为视图
+  -> model 数据，是一个Object
+  -> render函数返回一个字符串，模板的输出
+
+  ** 使用模板引擎详见Nunjucks文件夹
+
+  ** 对于模板渲染本身来说，速度是非常非常快的
+  ** 性能问题主要出现在从文件读取模板内容。这是一个IO操作，在Node.js环境中，单线程的JS最不能忍受的就是同步IO，但Nunjucks默认就使用同步IO读取模板文件
+  -> Nunjucks也提供了异步读取的方式，但是很麻烦
+
+  ** 但Nunjucks会缓存已读取的文件内容，只要指定了noCache: false，模板文件最多读取一次
+  -> 在开发环境下，可以关闭cache，每次重新加载模板，便于实时修改模板
+  -> 在生产环境下，一定要打开cache，这样就不会有性能问题
+
+使用MVC (Model-View-Controller 模型-视图-控制器)
+  1. 处理首页 GET /
+  2. 处理登录请求 POST /signin
+  3. 编写View
+  4. 编写middleware
+  5. 集成Nunjucks
+  6. 编写View下的base.html
+  7. 运行
+  8. 扩展
+  ** 详见koa2_Nunjucks文件夹

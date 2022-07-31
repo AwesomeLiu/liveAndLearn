@@ -1,0 +1,67 @@
+﻿Function 函数
+  定义函数的方式
+  1. function func(...) {...}
+  2. var func = function (...) {...}; // 匿名函数 全局
+
+  ** arguments 只在函数内部起作用，并且永远指向当前函数的调用者传入的所有参数
+
+  ** rest (ES6新增，详见js文件第61-66行)
+
+变量作用域
+
+变量提升
+  ** JavaScript的函数定义有个特点，它会先扫描整个函数体的语句，把所有申明的变量“提升”到函数顶部，但不会提升变量的赋值
+
+全局作用域
+  ** 全局对象 window
+  为了避免命名冲突，可将所有变量和函数全部绑定到一个全局变量中，经典的有jQuery/YUI等
+
+局部作用域
+  ** let (ES6新增) 声明变量，块级作用域
+
+  ** const (ES6新增) 声明常量，块级作用域，通常用全部大写表示
+
+方法
+  ** this 关键字
+  ** 要保证this指向正确，必须用obj.xxx()的形式调用！
+  可用 var that = this; 的形式捕获this
+
+  ** apply 它接收两个参数，第一个参数就是需要绑定的this变量，第二个参数是Array，表示函数本身的参数
+
+  ** call  与apply方法类似，唯一的区别是apply把参数打包成Array再传入，call把参数按顺序传入
+
+  ** 装饰器 利用apply方法还可以动态改变函数的行为
+
+高阶函数 让函数的参数能够接收别的函数，详见js文件第68-71行
+
+  ** Array.map()    遍历数组，详见js文件第73-77行
+  ** Array.reduce() 累加器，详见js文件第79-82行
+  ** Array.filter() 过滤器，详见js文件第84-87行
+  ** Array.sort()   排序，如果x < y，则返回-1；如果x == y，则返回0；如果x > y，则返回1
+  -> sort方法直接对Array进行修改
+
+Closure 闭包 详见js文件第89-123行
+
+Arrow Function 箭头函数 (ES6新增)
+  x => x * x
+  相当于
+  function (x) {
+      return x * x;
+  }
+
+  ** 箭头函数相当于匿名函数
+  -> 两个参数：(x, y) => x * x + y * y
+  -> 没有参数：() => 3.14
+  -> 可变参数：(x, y, ...rest) => {...}
+  -> 返回一个对象：x => ({ foo: x })
+
+  ** 箭头函数和匿名函数的区别：箭头函数内部的this是词法作用域，由上下文确定，详见js文件第125-144行
+
+generator 生成器
+  由 function* 定义，可以用 yield 返回多次，详见js文件第146-173行
+  调用generator对象有两个方法：
+  1. 调用generator对象的next()方法
+  -> next()方法会执行generator的代码，每次遇到yield x时，就返回一个对象{ value: x, done: true/false }，然后“暂停”.
+  ---> done表示这个generator是否已经执行结束，若done为true，则value就是return的返回值
+
+  2. 直接用for ... of循环迭代
